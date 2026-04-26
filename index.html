@@ -29,13 +29,19 @@
       overflow-x: hidden;
     }
 
-    /* Hintergrund-Partikel */
     .bg {
       position: fixed;
       inset: 0;
       background:
         radial-gradient(ellipse at 20% 50%, rgba(180, 140, 60, 0.06) 0%, transparent 60%),
         radial-gradient(ellipse at 80% 20%, rgba(180, 140, 60, 0.04) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    canvas#particles {
+      position: fixed;
+      inset: 0;
       pointer-events: none;
       z-index: 0;
     }
@@ -174,6 +180,147 @@
       line-height: 1;
     }
 
+    /* Info-Block */
+    .info-block {
+      margin: 1rem 0 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .info-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #b8922a;
+    }
+
+    .info-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      font-style: italic;
+      color: #a89070;
+      line-height: 1.5;
+    }
+
+    /* Add to Calendar */
+    .calendar-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 2rem 0 1rem;
+    }
+
+    .cal-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #b8922a;
+      border: 1px solid rgba(184, 146, 42, 0.35);
+      background: transparent;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .cal-btn:hover {
+      border-color: #b8922a;
+      color: #e8dcc8;
+      background: rgba(184, 146, 42, 0.08);
+    }
+
+    /* RSVP */
+    .rsvp-block {
+      margin: 2rem 0;
+    }
+
+    .rsvp-title {
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #b8922a;
+      margin-bottom: 1.2rem;
+    }
+
+    .rsvp-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      max-width: 340px;
+      margin: 0 auto;
+    }
+
+    .rsvp-form input,
+    .rsvp-form select {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(184, 146, 42, 0.3);
+      color: #e8dcc8;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      padding: 0.6rem 0;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+
+    .rsvp-form input::placeholder {
+      color: #4a3a20;
+      letter-spacing: 0.15em;
+    }
+
+    .rsvp-form select option {
+      background: #1a1a1a;
+      color: #e8dcc8;
+    }
+
+    .rsvp-form input:focus,
+    .rsvp-form select:focus {
+      border-bottom-color: #b8922a;
+    }
+
+    .rsvp-submit {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #b8922a;
+      border: 1px solid rgba(184, 146, 42, 0.35);
+      background: transparent;
+      padding: 0.8rem 2rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      width: 100%;
+    }
+
+    .rsvp-submit:hover {
+      border-color: #b8922a;
+      color: #e8dcc8;
+      background: rgba(184, 146, 42, 0.08);
+    }
+
+    .rsvp-success {
+      display: none;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: #c8a84b;
+      margin-top: 1rem;
+    }
+
     .location {
       font-size: 0.75rem;
       letter-spacing: 0.2em;
@@ -214,12 +361,14 @@
     @media (max-width: 480px) {
       .frame { inset: 0.8rem; }
       .container { padding: 2rem 1.2rem; }
+      .calendar-buttons { gap: 0.6rem; }
     }
   </style>
 </head>
 <body>
 
   <div class="bg"></div>
+  <canvas id="particles"></canvas>
   <div class="frame"></div>
 
   <div class="container">
@@ -262,41 +411,193 @@
       </div>
     </div>
 
-    <p class="location">Mehr Details folgen</p>
-    <p class="location" style="margin-top:0.5rem;"><span>Open from 2 pm till midnight</span></p>
+    <div class="divider"><div class="divider-diamond"></div></div>
+
+    <div class="info-block">
+      <div class="info-item">
+        <span class="info-label">Open from 2 pm till midnight</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Dresscode</span>
+        <span class="info-text">Gemütlich – und dem Wetter entsprechend</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Zur Kasse</span>
+        <span class="info-text">Es wird eine Kasse geben. Wer möchte, kann dazu beitragen, dass mir bald wieder jemand Farbe unter die Haut sticht.</span>
+      </div>
+    </div>
+
+    <div class="divider"><div class="divider-diamond"></div></div>
+
+    <!-- RSVP -->
+    <div class="rsvp-block">
+      <p class="rsvp-title">Zusagen</p>
+      <!--
+        RSVP-Setup:
+        1. Konto erstellen auf https://formspree.io (kostenlos, mit spicherpascal@gmail.com)
+        2. Neues Formular erstellen → du bekommst eine ID wie "xpwzabcd"
+        3. Unten "DEINE_FORMSPREE_ID" ersetzen
+        Alle Zusagen kommen dann per Mail und sind im Dashboard sichtbar.
+      -->
+      <form class="rsvp-form" id="rsvpForm" action="https://formspree.io/f/mdayjjzp" method="POST">
+        <input type="text" name="name" placeholder="Dein Name" required />
+        <select name="zusage" required>
+          <option value="" disabled selected style="color:#4a3a20;">Ich komme ...</option>
+          <option value="ja">Ja, ich bin dabei</option>
+          <option value="nein">Leider nicht</option>
+          <option value="vielleicht">Mal schauen</option>
+        </select>
+        <input type="text" name="anzahl" placeholder="Anzahl Personen (inkl. dir)" />
+        <button type="submit" class="rsvp-submit">Absenden</button>
+      </form>
+      <p class="rsvp-success" id="rsvpSuccess">Danke – bis zum 3. Oktober.</p>
+    </div>
+
+    <div class="divider"><div class="divider-diamond"></div></div>
+
+    <!-- Add to Calendar -->
+    <div class="calendar-buttons">
+      <a class="cal-btn" id="googleCal" href="#" target="_blank" rel="noopener">Google Calendar</a>
+      <button class="cal-btn" onclick="downloadICS()">iCal / Apple</button>
+    </div>
 
     <p class="footer-note">Wir sehen uns.</p>
 
   </div>
 
   <script>
-    const target = new Date('2026-10-03T18:00:00');
+    /* ── Countdown ── */
+    const target = new Date('2026-10-03T14:00:00');
 
     function update() {
-      const now = new Date();
-      const diff = target - now;
-
+      const diff = target - new Date();
       if (diff <= 0) {
-        document.getElementById('days').textContent = '0';
-        document.getElementById('hours').textContent = '0';
-        document.getElementById('minutes').textContent = '0';
-        document.getElementById('seconds').textContent = '0';
+        ['days','hours','minutes','seconds'].forEach(id => document.getElementById(id).textContent = '0');
         return;
       }
-
-      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((diff % (1000 * 60)) / 1000);
-
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
       document.getElementById('days').textContent    = String(d).padStart(2, '0');
       document.getElementById('hours').textContent   = String(h).padStart(2, '0');
       document.getElementById('minutes').textContent = String(m).padStart(2, '0');
       document.getElementById('seconds').textContent = String(s).padStart(2, '0');
     }
-
     update();
     setInterval(update, 1000);
+
+    /* ── Add to Calendar ── */
+    const eventDetails = {
+      text: 'Pascal Birthday Bash',
+      start: '20261003T140000',
+      end:   '20261004T000000',
+      location: 'Tobelwiesstrasse 29',
+      details: 'Pascal wird 40. Dress code: gemütlich. Open from 2 pm till midnight.'
+    };
+
+    document.getElementById('googleCal').href =
+      `https://www.google.com/calendar/render?action=TEMPLATE` +
+      `&text=${encodeURIComponent(eventDetails.text)}` +
+      `&dates=${eventDetails.start}/${eventDetails.end}` +
+      `&location=${encodeURIComponent(eventDetails.location)}` +
+      `&details=${encodeURIComponent(eventDetails.details)}`;
+
+    function downloadICS() {
+      const ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Pascal Birthday Bash//DE',
+        'BEGIN:VEVENT',
+        `DTSTART:${eventDetails.start}`,
+        `DTEND:${eventDetails.end}`,
+        `SUMMARY:${eventDetails.text}`,
+        `LOCATION:${eventDetails.location}`,
+        `DESCRIPTION:${eventDetails.details}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const a    = Object.assign(document.createElement('a'), { href: url, download: 'pascal-40.ics' });
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /* ── RSVP Formspree AJAX ── */
+    const form = document.getElementById('rsvpForm');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = new FormData(form);
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+        if (res.ok) {
+          form.style.display = 'none';
+          document.getElementById('rsvpSuccess').style.display = 'block';
+        }
+      } catch (_) {}
+    });
+
+    /* ── Gold Glitter Particles ── */
+    const canvas = document.getElementById('particles');
+    const ctx    = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const GOLD = ['#c8a84b', '#b8922a', '#d4b870', '#e8dcc8', '#a07820'];
+    const COUNT = 90;
+
+    class Fleck {
+      constructor(randomY) {
+        this.init(randomY);
+      }
+      init(randomY) {
+        this.x   = Math.random() * canvas.width;
+        this.y   = randomY ? Math.random() * canvas.height : canvas.height + 10;
+        this.sz  = Math.random() * 1.8 + 0.4;
+        this.vy  = -(Math.random() * 0.4 + 0.15);
+        this.vx  = (Math.random() - 0.5) * 0.25;
+        this.op  = Math.random() * 0.55 + 0.15;
+        this.col = GOLD[Math.floor(Math.random() * GOLD.length)];
+        this.rot = Math.random() * Math.PI;
+        this.vr  = (Math.random() - 0.5) * 0.02;
+        this.life    = 0;
+        this.maxLife = Math.random() * 260 + 120;
+      }
+      step() {
+        this.x   += this.vx;
+        this.y   += this.vy;
+        this.rot += this.vr;
+        this.life++;
+        if (this.life > this.maxLife || this.y < -10) this.init(false);
+      }
+      draw() {
+        const fade = 1 - this.life / this.maxLife;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rot);
+        ctx.globalAlpha = this.op * fade;
+        ctx.fillStyle   = this.col;
+        ctx.fillRect(-this.sz / 2, -this.sz * 1.5, this.sz, this.sz * 3);
+        ctx.restore();
+      }
+    }
+
+    const flecks = Array.from({ length: COUNT }, () => new Fleck(true));
+
+    function tick() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      flecks.forEach(f => { f.step(); f.draw(); });
+      requestAnimationFrame(tick);
+    }
+    tick();
   </script>
 
 </body>
